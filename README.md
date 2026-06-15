@@ -26,4 +26,4 @@ See [DEPLOY.md](./DEPLOY.md) for GitHub (personal account) and Vercel/Netlify se
 
 - Suggested kW = bimonthly units ÷ 60 days ÷ 4 units/kW/day
 - Solar offset = kW × 4 × 60 bimonthly units
-- Bill after solar = TNEB energy charge on (consumption − offset)
+- Bill after solar = TNEB energy charge on  (consumption − offset)
