@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import {
-  calculateEnergyCharge,
-  estimateUnitsFromBill,
-  getSlabBreakdown,
-  suggestKW,
-} from "@/lib/tneb";
+import { billToUnits, solarSizing } from "@/utils/calculations";
+import { formatSystemLabel } from "@/utils/panels";
+import { useCalculator } from "@/context/CalculatorContext";
+import ResultEnhancements from "./ResultEnhancements";
 import {
   btnPrimary,
   inputClass,
@@ -16,31 +14,25 @@ import {
   statGrid,
   statLabel,
   statValue,
-  tableClass,
-  tableWrap,
-  tdClass,
-  thClass,
 } from "@/lib/ui";
 
 export default function BillCalculatorTab() {
+  const { panelWatts, settings } = useCalculator();
   const [billAmount, setBillAmount] = useState("");
   const [result, setResult] = useState<{
     units: number;
     estimatedCharge: number;
     suggestedKW: number;
-    breakdown: ReturnType<typeof getSlabBreakdown>;
+    panels: number;
   } | null>(null);
 
   function handleCalculate() {
     const amount = parseFloat(billAmount);
     if (!amount || amount <= 0) return;
-    const { units, estimatedCharge } = estimateUnitsFromBill(amount);
-    setResult({
-      units,
-      estimatedCharge,
-      suggestedKW: suggestKW(units),
-      breakdown: getSlabBreakdown(units),
-    });
+    const { units, estimatedCharge } = billToUnits(amount, settings);
+    const suggestedKW = solarSizing(units, panelWatts, settings);
+    const panels = Math.ceil((suggestedKW * 1000) / panelWatts);
+    setResult({ units, estimatedCharge, suggestedKW, panels });
   }
 
   return (
@@ -77,41 +69,18 @@ export default function BillCalculatorTab() {
               <p className={statValue}>₹{result.estimatedCharge.toFixed(0)}</p>
             </div>
             <div className={`${statCard} ring-2 ring-amber-400 min-[480px]:col-span-2 sm:col-span-1`}>
-              <p className={statLabel}>Suggested kW</p>
-              <p className={`${statValue} text-amber-600`}>{result.suggestedKW} kW</p>
+              <p className={statLabel}>Suggested system</p>
+              <p className={`${statValue} text-amber-600`}>
+                {formatSystemLabel(result.panels, panelWatts)}
+              </p>
             </div>
           </div>
 
-          {result.breakdown.length > 0 && (
-            <div className={tableWrap}>
-              <table className={tableClass}>
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className={thClass}>Slab</th>
-                    <th className={thClass}>Units</th>
-                    <th className={thClass}>Rate</th>
-                    <th className={thClass}>Charge</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.breakdown.map((row) => (
-                    <tr key={row.range} className="border-t border-slate-100">
-                      <td className={tdClass}>{row.range}</td>
-                      <td className={tdClass}>{row.unitsInSlab}</td>
-                      <td className={tdClass}>₹{row.rate}</td>
-                      <td className={tdClass}>₹{row.charge.toFixed(2)}</td>
-                    </tr>
-                  ))}
-                  <tr className="border-t border-slate-200 font-semibold">
-                    <td className={tdClass} colSpan={3}>Total</td>
-                    <td className={tdClass}>
-                      ₹{calculateEnergyCharge(result.units).toFixed(2)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          )}
+          <ResultEnhancements
+            bimonthlyUnits={result.units}
+            suggestedKW={result.suggestedKW}
+            energyCharge={result.estimatedCharge}
+          />
         </div>
       )}
     </div>

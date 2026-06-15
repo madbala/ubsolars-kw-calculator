@@ -7,15 +7,21 @@ Use your **personal** GitHub account (not work). One-time setup:
 ```bash
 cd ~/Documents/solar-kw-calculator
 
-# Local identity for this repo only (personal)
+# Personal identity for THIS repo only (already set if you used setup below)
 git config user.email "rbalaguru013@gmail.com"
-git config user.name "Your Name"
+git config user.name "Balaguru"
+git config commit.gpgsign false   # avoid work GPG signing on personal commits
 
-# If work SSH key is default, use HTTPS for personal GitHub:
-git remote add origin https://github.com/YOUR_PERSONAL_USERNAME/solar-kw-calculator.git
+# Commit (only after identity is correct)
+git commit -m "Add TNEB solar kW calculator SPA"
 ```
 
 Create the empty repo on GitHub (personal account): **New repository** → name `solar-kw-calculator` → Public → no template.
+
+```bash
+# If work SSH key is default, use HTTPS for personal GitHub:
+git remote add origin https://github.com/YOUR_PERSONAL_USERNAME/solar-kw-calculator.git
+```
 
 Then push:
 
@@ -25,6 +31,57 @@ git push -u origin main
 
 When prompted for HTTPS credentials, use a **Personal Access Token** (not work password).
 Create token: GitHub → Settings → Developer settings → Personal access tokens → `repo` scope.
+
+### Fix: `Permission denied to balaguruua` (wrong GitHub account)
+
+macOS may be using your **work** GitHub login (`balaguruua`) for all HTTPS pushes. The repo is under **madbala** — you must authenticate as **madbala**.
+
+**Step 1 — Clear cached GitHub login:**
+
+```bash
+printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain erase
+```
+
+Or: Keychain Access → search `github.com` → delete the internet password entry.
+
+**Step 2 — Create a PAT on the madbala account**
+
+1. Log into GitHub as **madbala** (personal)
+2. Settings → Developer settings → Personal access tokens → Generate new token (classic)
+3. Scope: `repo` → copy the token
+
+**Step 3 — Push again**
+
+```bash
+cd ~/Documents/solar-kw-calculator
+git push -u origin main
+```
+
+When prompted:
+- **Username:** `madbala`
+- **Password:** paste the **token** (not your GitHub password)
+
+**Optional — GitHub CLI (cleanest for two accounts):**
+
+```bash
+brew install gh
+gh auth login   # browser → log in as madbala
+gh auth setup-git
+git push -u origin main
+```
+
+**Optional — SSH (separate key for personal):**
+
+```bash
+# ~/.ssh/config
+# Host github.com-personal
+#   HostName github.com
+#   User git
+#   IdentityFile ~/.ssh/id_ed25519_personal
+
+git remote set-url origin git@github.com-personal:madbala/ubsolars-kw-calculator.git
+git push -u origin main
+```
 
 ### Alternative: GitHub CLI (personal account)
 

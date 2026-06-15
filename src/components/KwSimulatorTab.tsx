@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { estimateUnitsFromBill, simulateAtKw, suggestKW } from "@/lib/tneb";
+import { billToUnits, getSystemRecommendations, simulateAtKw } from "@/utils/calculations";
+import { formatSystemLabel } from "@/utils/panels";
+import { useCalculator } from "@/context/CalculatorContext";
 import {
   actionBtns,
   actionHeader,
@@ -26,6 +28,7 @@ import {
 type InputMode = "units" | "bill";
 
 export default function KwSimulatorTab() {
+  const { panelWatts, settings } = useCalculator();
   const [inputMode, setInputMode] = useState<InputMode>("units");
   const [unitsInput, setUnitsInput] = useState("");
   const [billInput, setBillInput] = useState("");
@@ -34,6 +37,7 @@ export default function KwSimulatorTab() {
     bimonthlyUnits: number;
     inputBill?: number;
     suggestedKW: number;
+    suggestedPanels: number;
     baselineBill: number;
     scenarios: ReturnType<typeof simulateAtKw>[];
   } | null>(null);
@@ -45,7 +49,7 @@ export default function KwSimulatorTab() {
     }
     const bill = parseFloat(billInput);
     if (!bill || bill <= 0) return null;
-    return estimateUnitsFromBill(bill).units;
+    return billToUnits(bill, settings).units;
   }
 
   function addKw() {
@@ -67,13 +71,15 @@ export default function KwSimulatorTab() {
 
     if (kwValues.length === 0) return;
 
-    const scenarios = kwValues.map((kw) => simulateAtKw(bimonthlyUnits, kw));
+    const scenarios = kwValues.map((kw) => simulateAtKw(bimonthlyUnits, kw, settings));
     const bill = inputMode === "bill" ? parseFloat(billInput) : undefined;
+    const systems = getSystemRecommendations(bimonthlyUnits, panelWatts, settings);
 
     setResult({
       bimonthlyUnits,
       inputBill: bill,
-      suggestedKW: suggestKW(bimonthlyUnits),
+      suggestedKW: systems.recommended.kw,
+      suggestedPanels: systems.recommended.panels,
       baselineBill: scenarios[0].baselineBill,
       scenarios,
     });
@@ -82,10 +88,10 @@ export default function KwSimulatorTab() {
   function fillSuggested() {
     const units = resolveUnits();
     if (!units) return;
-    const kw = suggestKW(units);
+    const { recommended } = getSystemRecommendations(units, panelWatts, settings);
     setKwEntries((prev) => {
-      const has = prev.some((e) => parseFloat(e) === kw);
-      return has ? prev : [...prev, String(kw)];
+      const has = prev.some((e) => parseFloat(e) === recommended.kw);
+      return has ? prev : [...prev, String(recommended.kw)];
     });
   }
 
@@ -155,7 +161,7 @@ export default function KwSimulatorTab() {
               onClick={fillSuggested}
               className={`${linkBtn} text-slate-600 hover:text-slate-900`}
             >
-              + Suggested
+              + Suggested kW
             </button>
             <button
               type="button"
@@ -220,8 +226,10 @@ export default function KwSimulatorTab() {
               <p className={statValue}>₹{result.baselineBill.toFixed(0)}</p>
             </div>
             <div className={`${statCard} ring-2 ring-amber-400 min-[480px]:col-span-2 sm:col-span-1`}>
-              <p className={statLabel}>Suggested kW</p>
-              <p className={`${statValue} text-amber-600`}>{result.suggestedKW} kW</p>
+              <p className={statLabel}>Suggested system</p>
+              <p className={`${statValue} text-amber-600`}>
+                {formatSystemLabel(result.suggestedPanels, panelWatts)}
+              </p>
             </div>
           </div>
 

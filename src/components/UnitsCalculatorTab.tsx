@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { suggestKW, unitStats } from "@/lib/tneb";
+import {
+  calculateEnergyCharge,
+  solarSizing,
+  unitStats,
+} from "@/utils/calculations";
+import { formatSystemLabel } from "@/utils/panels";
+import { useCalculator } from "@/context/CalculatorContext";
+import ResultEnhancements from "./ResultEnhancements";
 import {
   actionHeader,
   btnIcon,
@@ -17,12 +24,13 @@ import {
 } from "@/lib/ui";
 
 export default function UnitsCalculatorTab() {
+  const { panelWatts, settings } = useCalculator();
   const [entries, setEntries] = useState<string[]>(["", ""]);
   const [results, setResults] = useState<{
     min: number;
     max: number;
     average: number;
-    suggestions: { label: string; units: number; kw: number }[];
+    suggestions: { label: string; units: number; kw: number; panels: number }[];
   } | null>(null);
 
   function addEntry() {
@@ -41,17 +49,27 @@ export default function UnitsCalculatorTab() {
     if (values.length === 0) return;
 
     const stats = unitStats(values);
+    const toSuggestion = (label: string, units: number) => {
+      const kw = solarSizing(units, panelWatts, settings);
+      const panels = Math.ceil((kw * 1000) / panelWatts);
+      return { label, units, kw, panels };
+    };
+
     setResults({
       min: stats.min,
       max: stats.max,
       average: stats.average,
       suggestions: [
-        { label: "Minimum", units: stats.min, kw: suggestKW(stats.min) },
-        { label: "Average", units: stats.average, kw: suggestKW(stats.average) },
-        { label: "Maximum", units: stats.max, kw: suggestKW(stats.max) },
+        toSuggestion("Minimum", stats.min),
+        toSuggestion("Average", stats.average),
+        toSuggestion("Maximum", stats.max),
       ],
     });
   }
+
+  const primary = results
+    ? results.suggestions.find((s) => s.label === "Average") ?? results.suggestions[0]
+    : null;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -100,7 +118,7 @@ export default function UnitsCalculatorTab() {
         Calculate
       </button>
 
-      {results && (
+      {results && primary && (
         <div className={resultsBox}>
           <div className={statGrid}>
             <div className={statCard}>
@@ -127,11 +145,17 @@ export default function UnitsCalculatorTab() {
                   <span className="text-slate-500"> ({s.units} units)</span>
                 </span>
                 <span className="shrink-0 text-lg font-bold text-amber-600 sm:text-xl">
-                  {s.kw} kW
+                  {formatSystemLabel(s.panels, panelWatts)}
                 </span>
               </div>
             ))}
           </div>
+
+          <ResultEnhancements
+            bimonthlyUnits={primary.units}
+            suggestedKW={primary.kw}
+            energyCharge={calculateEnergyCharge(primary.units, settings)}
+          />
         </div>
       )}
     </div>
