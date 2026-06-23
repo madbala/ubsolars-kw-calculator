@@ -1,6 +1,7 @@
 "use client";
 
 import type { SolarScoreLevel } from "@/utils/calculations";
+import { mutedText, sectionCardCompact, sectionTitle } from "@/lib/ui";
 
 type Props = {
   score: SolarScoreLevel;
@@ -16,11 +17,11 @@ const CONFIG: Record<
   },
   moderate: {
     label: "Moderate Benefit",
-    className: "bg-amber-100 text-amber-800 ring-amber-300",
+    className: "bg-accent-light text-accent-dark ring-accent/40",
   },
   not_ideal: {
     label: "Not Ideal",
-    className: "bg-slate-100 text-slate-600 ring-slate-300",
+    className: "bg-surface-muted text-ink-muted ring-border",
   },
 };
 
@@ -28,14 +29,14 @@ export default function SolarScore({ score }: Props) {
   const { label, className } = CONFIG[score];
 
   return (
-    <div className="flex flex-col items-center gap-2 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
-      <h3 className="font-semibold text-slate-800">Solar recommendation score</h3>
+    <div className={`${sectionCardCompact} flex flex-col items-center gap-2`}>
+      <h3 className={sectionTitle}>Solar recommendation score</h3>
       <span
         className={`inline-flex rounded-full px-4 py-2 text-sm font-semibold ring-1 ${className}`}
       >
         {label}
       </span>
-      <p className="text-center text-xs text-slate-500">
+      <p className={`text-center ${mutedText}`}>
         Based on consumption and roof suitability
       </p>
     </div>

@@ -1,7 +1,31 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist);
+  --font-sans: var(--font-jakarta);
+
+  --color-brand: #0d9488;
+  --color-brand-dark: #0f766e;
+  --color-brand-light: #ccfbf1;
+  --color-accent: #f59e0b;
+  --color-accent-dark: #d97706;
+  --color-accent-light: #fef3c7;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8fafc;
+  --color-surface-elevated: #ffffff;
+  --color-ink: #0f172a;
+  --color-ink-muted: #64748b;
+  --color-ink-subtle: #94a3b8;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+}
+
+:root {
+  --bg-base: #f0fdfa;
+  --bg-gradient-start: #042f2e;
+  --bg-gradient-mid: #0f766e;
+  --bg-gradient-end: #b45309;
+  --hero-glow: rgba(245, 158, 11, 0.35);
+  --card-shadow: 0 4px 6px -1px rgb(15 23 42 / 0.06), 0 20px 40px -12px rgb(13 148 136 / 0.15);
 }
 
 html {
@@ -10,10 +34,46 @@ html {
 }
 
 body {
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--bg-base);
+  color: var(--color-ink);
   padding-left: env(safe-area-inset-left, 0);
   padding-right: env(safe-area-inset-right, 0);
+}
+
+.app-shell {
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, var(--hero-glow), transparent 70%),
+    linear-gradient(165deg, #ecfdf5 0%, #fffbeb 45%, #f0fdfa 100%);
+}
+
+.hero-panel {
+  background: linear-gradient(
+    135deg,
+    var(--bg-gradient-start) 0%,
+    var(--bg-gradient-mid) 55%,
+    var(--bg-gradient-end) 100%
+  );
+}
+
+.hero-brand {
+  background: linear-gradient(90deg, #ffffff 0%, #fef9c3 55%, #fde68a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-title {
+  background: linear-gradient(90deg, #ffffff 0%, #fef3c7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.app-card {
+  background: var(--color-surface-elevated);
+  border: 1px solid rgb(255 255 255 / 0.8);
+  box-shadow: var(--card-shadow);
 }
 
 input[type="number"] {

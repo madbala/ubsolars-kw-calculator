@@ -1,24 +1,29 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "UB Solars KW Calculator",
-  description: "TNEB solar sizing and bill simulator",
+  title: "UB Solars — Size Your Solar in Seconds",
+  description:
+    "Free TNEB solar calculator (LT-IA slabs, 2024–2026): turn your electricity bill into the right kW system, savings estimate, and post-solar bill — no signup.",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#f8fafc",
+  themeColor: "#0f766e",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} h-full antialiased`}>
+    <html lang="en" className={`${jakarta.variable} h-full antialiased`}>
       <body className="min-h-full min-h-[100dvh] font-sans">{children}</body>
     </html>
   );

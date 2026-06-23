@@ -87,10 +87,16 @@ export default function ResultEnhancements({
     subsidy: financials.subsidy,
     netInvestment: financials.netInvestment,
     emi: financials.emi,
+    interestRate,
+    tenureYears,
     paybackYears: financials.roi.paybackYears,
     totalSavings25Years: financials.roi.totalSavings25Years,
     monthlySavings: postSolar.monthlySavings,
+    bimonthlySavings: postSolar.bimonthlySavings,
+    monthlyBillAvg: postSolar.currentBill / 2,
+    netMonthlyCashflow: postSolar.monthlySavings - financials.emi,
     postSolarBill: postSolar.newBill,
+    solarGeneration: postSolar.generation,
     roofAreaSqFt: roofArea,
     systemMin: systems.minimum.kw,
     systemMax: systems.maximum.kw,
@@ -102,7 +108,7 @@ export default function ResultEnhancements({
   }
 
   return (
-    <div className="mt-4 space-y-4 border-t border-amber-200 pt-4">
+    <div className="mt-4 space-y-4 border-t border-brand-light pt-4">
       <SystemRecommendations
         systems={systems}
         selectedKw={selectedKw}
@@ -134,7 +140,11 @@ export default function ResultEnhancements({
 
       <EmiCalculator
         netInvestment={financials.netInvestment}
-        bimonthlyBill={energyCharge}
+        bimonthlyBill={postSolar.currentBill}
+        postSolarBill={postSolar.newBill}
+        bimonthlySavings={postSolar.bimonthlySavings}
+        monthlySavings={postSolar.monthlySavings}
+        systemKw={selectedKw}
         interestRate={interestRate}
         tenureYears={tenureYears}
         defaultInterestRate={settings.defaultInterestRate}

@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { RoiResult } from "@/utils/calculations";
-import { statCard, statLabel, statValue } from "@/lib/ui";
+import { statCard, statLabel, statValue, sectionCard, sectionTitle } from "@/lib/ui";
 
 type Props = {
   roi: RoiResult;
@@ -24,8 +24,8 @@ export default function RoiDashboard({ roi, roiYears }: Props) {
   }));
 
   return (
-    <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
-      <h3 className="font-semibold text-slate-800">ROI dashboard</h3>
+    <div className={sectionCard}>
+      <h3 className={sectionTitle}>ROI dashboard</h3>
 
       <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2">
         <div className={statCard}>

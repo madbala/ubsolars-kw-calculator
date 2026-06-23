@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useCalculator } from "@/context/CalculatorContext";
 import { btnPrimary, inputClass, labelClass } from "@/lib/ui";
 import { isAdminUnlocked, setAdminUnlocked } from "@/utils/adminSession";
+import { closeAdminSession, openAdminSession } from "@/utils/settingsClient";
 import type { AppSettings, CompanyInfo } from "@/utils/settings";
 
 function randomSixDigit(): number {
@@ -91,19 +92,25 @@ function AdminSettingsForm() {
   const { settings, updateSettings } = useCalculator();
   const [draft, setDraft] = useState<AppSettings>(settings);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   useEffect(() => setDraft(settings), [settings]);
 
-  function save() {
-    updateSettings(draft);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function save() {
+    setSaveError("");
+    try {
+      await updateSettings(draft);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Failed to save settings");
+    }
   }
 
   return (
     <div className="space-y-6">
-      <section className="space-y-3 rounded-xl border border-slate-200 p-4">
-        <h3 className="font-semibold text-slate-800">Company (PDF proposal)</h3>
+      <section className="space-y-3 rounded-xl border border-border p-4">
+        <h3 className="font-semibold text-ink">Company (PDF proposal)</h3>
         <CompanyFields
           company={draft.company}
           onChange={(company) => setDraft({ ...draft, company })}
@@ -115,8 +122,8 @@ function AdminSettingsForm() {
         />
       </section>
 
-      <section className="space-y-3 rounded-xl border border-slate-200 p-4">
-        <h3 className="font-semibold text-slate-800">Pricing &amp; generation</h3>
+      <section className="space-y-3 rounded-xl border border-border p-4">
+        <h3 className="font-semibold text-ink">Pricing &amp; generation</h3>
         <NumberField
           label="Cost per kW (Rs.)"
           value={draft.costPerKw}
@@ -132,13 +139,13 @@ function AdminSettingsForm() {
           value={draft.sqftPerKw}
           onChange={(v) => setDraft({ ...draft, sqftPerKw: v })}
         />
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-ink-muted">
           MNRE typical range 120–150 units/kW/month for Tamil Nadu.
         </p>
       </section>
 
-      <section className="space-y-3 rounded-xl border border-slate-200 p-4">
-        <h3 className="font-semibold text-slate-800">Loan defaults</h3>
+      <section className="space-y-3 rounded-xl border border-border p-4">
+        <h3 className="font-semibold text-ink">Loan defaults</h3>
         <NumberField
           label="Default interest rate (% p.a.)"
           value={draft.defaultInterestRate}
@@ -152,8 +159,8 @@ function AdminSettingsForm() {
         />
       </section>
 
-      <section className="space-y-3 rounded-xl border border-slate-200 p-4">
-        <h3 className="font-semibold text-slate-800">ROI assumptions</h3>
+      <section className="space-y-3 rounded-xl border border-border p-4">
+        <h3 className="font-semibold text-ink">ROI assumptions</h3>
         <NumberField
           label="ROI projection years"
           value={draft.roiYears}
@@ -172,8 +179,8 @@ function AdminSettingsForm() {
         />
       </section>
 
-      <section className="space-y-3 rounded-xl border border-slate-200 p-4">
-        <h3 className="font-semibold text-slate-800">TNEB — consumption up to 500 units</h3>
+      <section className="space-y-3 rounded-xl border border-border p-4">
+        <h3 className="font-semibold text-ink">TNEB — consumption up to 500 units</h3>
         <NumberField
           label="Free units up to"
           value={draft.tnebUnder500.freeUpTo}
@@ -199,8 +206,8 @@ function AdminSettingsForm() {
         />
       </section>
 
-      <section className="space-y-3 rounded-xl border border-slate-200 p-4">
-        <h3 className="font-semibold text-slate-800">TNEB — consumption above 500 units</h3>
+      <section className="space-y-3 rounded-xl border border-border p-4">
+        <h3 className="font-semibold text-ink">TNEB — consumption above 500 units</h3>
         <NumberField
           label="Free units up to"
           value={draft.tnebOver500.freeUpTo}
@@ -233,8 +240,8 @@ function AdminSettingsForm() {
         ))}
       </section>
 
-      <section className="space-y-3 rounded-xl border border-slate-200 p-4">
-        <h3 className="font-semibold text-slate-800">Subsidy slabs</h3>
+      <section className="space-y-3 rounded-xl border border-border p-4">
+        <h3 className="font-semibold text-ink">Subsidy slabs</h3>
         <NumberField
           label="Tier 1 max kW"
           value={draft.subsidy.tier1MaxKw}
@@ -274,10 +281,15 @@ function AdminSettingsForm() {
         />
       </section>
 
-      <button type="button" onClick={save} className={btnPrimary}>
+      <button type="button" onClick={() => void save()} className={btnPrimary}>
         Save settings
       </button>
-      {saved && <p className="text-sm text-green-700">Settings saved.</p>}
+      {saved && (
+        <p className="text-sm text-green-700">
+          Settings saved. New visitors will see these values on their next visit.
+        </p>
+      )}
+      {saveError && <p className="text-sm text-red-600">{saveError}</p>}
     </div>
   );
 }
@@ -304,6 +316,7 @@ export default function AdminDashboard() {
     }
     if (parseInt(trimmed, 10) === expected) {
       setAdminUnlocked(true);
+      void openAdminSession();
       setUnlocked(true);
       setError("");
     } else {
@@ -315,6 +328,7 @@ export default function AdminDashboard() {
 
   function lock() {
     setAdminUnlocked(false);
+    void closeAdminSession();
     setUnlocked(false);
     setChallenge(randomSixDigit());
     setAnswer("");
@@ -322,19 +336,19 @@ export default function AdminDashboard() {
 
   if (!ready) {
     return (
-      <div className="mx-auto max-w-sm rounded-xl border border-slate-200 p-4 sm:p-6">
-        <p className="text-sm text-slate-500">Loading admin…</p>
+      <div className="mx-auto max-w-sm rounded-xl border border-border p-4 sm:p-6">
+        <p className="text-sm text-ink-muted">Loading admin…</p>
       </div>
     );
   }
 
   if (!unlocked) {
     return (
-      <div className="mx-auto max-w-sm space-y-4 rounded-xl border border-slate-200 p-4 sm:p-6">
-        <h2 className="text-lg font-semibold text-slate-800">Admin access</h2>
-        <p className="text-sm text-slate-600">
+      <div className="mx-auto max-w-sm space-y-4 rounded-xl border border-border p-4 sm:p-6">
+        <h2 className="text-lg font-semibold text-ink">Admin access</h2>
+        <p className="text-sm text-ink-muted">
           Decrypt:{" "}
-          <strong className="font-mono text-xl tracking-wider text-amber-600">
+          <strong className="font-mono text-xl tracking-wider text-accent">
             {challenge.toString().padStart(6, "0")}
           </strong>
         </p>
@@ -363,11 +377,11 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-slate-800">Settings dashboard</h2>
+        <h2 className="text-lg font-semibold text-ink">Settings dashboard</h2>
         <button
           type="button"
           onClick={lock}
-          className="text-sm text-slate-500 underline touch-manipulation"
+          className="text-sm text-ink-muted underline touch-manipulation"
         >
           Lock
         </button>

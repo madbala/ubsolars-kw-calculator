@@ -1,13 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { billToUnits, solarSizing } from "@/utils/calculations";
-import { formatSystemLabel } from "@/utils/panels";
+import { billToUnits, getSystemRecommendations } from "@/utils/calculations";
 import { useCalculator } from "@/context/CalculatorContext";
+import { exampleBillPlaceholder } from "@/utils/examples";
+import { validateBillAmount } from "@/utils/validation";
 import ResultEnhancements from "./ResultEnhancements";
+import SystemSizeDisplay from "./SystemSizeDisplay";
 import {
   btnPrimary,
+  errorText,
+  highlightCard,
   inputClass,
+  inputErrorClass,
   labelClass,
   resultsBox,
   statCard,
@@ -19,6 +24,7 @@ import {
 export default function BillCalculatorTab() {
   const { panelWatts, settings } = useCalculator();
   const [billAmount, setBillAmount] = useState("");
+  const [error, setError] = useState("");
   const [result, setResult] = useState<{
     units: number;
     estimatedCharge: number;
@@ -27,12 +33,30 @@ export default function BillCalculatorTab() {
   } | null>(null);
 
   function handleCalculate() {
-    const amount = parseFloat(billAmount);
-    if (!amount || amount <= 0) return;
+    setError("");
+    const check = validateBillAmount(billAmount);
+    if (!check.ok) {
+      setError(check.message);
+      setResult(null);
+      return;
+    }
+
+    const amount = check.value!;
     const { units, estimatedCharge } = billToUnits(amount, settings);
-    const suggestedKW = solarSizing(units, panelWatts, settings);
-    const panels = Math.ceil((suggestedKW * 1000) / panelWatts);
-    setResult({ units, estimatedCharge, suggestedKW, panels });
+    const { recommended } = getSystemRecommendations(units, panelWatts, settings);
+
+    if (units <= 0) {
+      setError("Could not estimate units from this bill amount");
+      setResult(null);
+      return;
+    }
+
+    setResult({
+      units,
+      estimatedCharge,
+      suggestedKW: recommended.kw,
+      panels: recommended.panels,
+    });
   }
 
   return (
@@ -46,11 +70,16 @@ export default function BillCalculatorTab() {
           type="number"
           min="0"
           step="1"
-          placeholder="e.g. 2500"
+          inputMode="numeric"
+          placeholder={exampleBillPlaceholder(settings)}
           value={billAmount}
-          onChange={(e) => setBillAmount(e.target.value)}
-          className={`mt-1.5 ${inputClass}`}
+          onChange={(e) => {
+            setBillAmount(e.target.value);
+            if (error) setError("");
+          }}
+          className={`mt-1.5 ${error ? inputErrorClass : inputClass}`}
         />
+        {error && <p className={errorText}>{error}</p>}
       </div>
 
       <button type="button" onClick={handleCalculate} className={btnPrimary}>
@@ -68,11 +97,13 @@ export default function BillCalculatorTab() {
               <p className={statLabel}>Energy charge</p>
               <p className={statValue}>₹{result.estimatedCharge.toFixed(0)}</p>
             </div>
-            <div className={`${statCard} ring-2 ring-amber-400 min-[480px]:col-span-2 sm:col-span-1`}>
+            <div className={`${statCard} ${highlightCard} min-[480px]:col-span-2 sm:col-span-1`}>
               <p className={statLabel}>Suggested system</p>
-              <p className={`${statValue} text-amber-600`}>
-                {formatSystemLabel(result.panels, panelWatts)}
-              </p>
+              <SystemSizeDisplay
+                panels={result.panels}
+                panelWatts={panelWatts}
+                highlight
+              />
             </div>
           </div>
 

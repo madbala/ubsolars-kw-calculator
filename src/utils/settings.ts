@@ -44,9 +44,10 @@ export type AppSettings = {
   tnebOver500: TnebOver500;
   subsidy: SubsidySettings;
   costPerKw: number;
-  /** MNRE benchmark: ~120–150 units/kW/month for Tamil Nadu */
   monthlyUnitsPerKw: number;
 };
+
+export type StoredSettings = AppSettings & { updatedAt?: string };
 
 export const DEFAULT_SETTINGS: AppSettings = {
   company: {
@@ -89,9 +90,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   monthlyUnitsPerKw: 135,
 };
 
-const STORAGE_KEY = "ubsolars-settings";
-
-function mergeSettings(partial: Partial<AppSettings>): AppSettings {
+export function mergeSettings(partial: Partial<AppSettings>): AppSettings {
   return {
     ...DEFAULT_SETTINGS,
     ...partial,
@@ -100,19 +99,4 @@ function mergeSettings(partial: Partial<AppSettings>): AppSettings {
     tnebOver500: { ...DEFAULT_SETTINGS.tnebOver500, ...partial.tnebOver500 },
     subsidy: { ...DEFAULT_SETTINGS.subsidy, ...partial.subsidy },
   };
-}
-
-export function loadSettings(): AppSettings {
-  if (typeof window === "undefined") return DEFAULT_SETTINGS;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_SETTINGS;
-    return mergeSettings(JSON.parse(raw) as Partial<AppSettings>);
-  } catch {
-    return DEFAULT_SETTINGS;
-  }
-}
-
-export function saveSettings(settings: AppSettings): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 }

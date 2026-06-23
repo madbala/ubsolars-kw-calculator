@@ -8,19 +8,14 @@ import {
   useMemo,
   useState,
 } from "react";
-import {
-  DEFAULT_SETTINGS,
-  loadSettings,
-  saveSettings,
-  type AppSettings,
-} from "@/utils/settings";
+import { DEFAULT_SETTINGS, type AppSettings } from "@/utils/settings";
+import { fetchSharedSettings, saveSharedSettings } from "@/utils/settingsClient";
 
 type CalculatorContextValue = {
   panelWatts: number;
   setPanelWatts: (w: number) => void;
   settings: AppSettings;
-  updateSettings: (next: AppSettings) => void;
-  refreshSettings: () => void;
+  updateSettings: (next: AppSettings) => Promise<void>;
 };
 
 const CalculatorContext = createContext<CalculatorContextValue | null>(null);
@@ -29,28 +24,20 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
   const [panelWatts, setPanelWatts] = useState(550);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
 
-  const refreshSettings = useCallback(() => {
-    setSettings(loadSettings());
+  useEffect(() => {
+    fetchSharedSettings()
+      .then((remote) => setSettings(remote))
+      .catch(() => setSettings(DEFAULT_SETTINGS));
   }, []);
 
-  useEffect(() => {
-    refreshSettings();
-  }, [refreshSettings]);
-
-  const updateSettings = useCallback((next: AppSettings) => {
-    saveSettings(next);
-    setSettings(next);
+  const updateSettings = useCallback(async (next: AppSettings) => {
+    const saved = await saveSharedSettings(next);
+    setSettings(saved);
   }, []);
 
   const value = useMemo(
-    () => ({
-      panelWatts,
-      setPanelWatts,
-      settings,
-      updateSettings,
-      refreshSettings,
-    }),
-    [panelWatts, settings, updateSettings, refreshSettings],
+    () => ({ panelWatts, setPanelWatts, settings, updateSettings }),
+    [panelWatts, settings, updateSettings],
   );
 
   return (

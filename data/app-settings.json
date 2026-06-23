@@ -1,0 +1,41 @@
+{
+  "company": {
+    "name": "UB Solars",
+    "addressLine1": "34A, Dr.Besant Road, Vijayalakshmi Theatre(opp)",
+    "addressLine2": "Kumbakonam",
+    "pincode": "612001",
+    "phone1": "+91 7200100864",
+    "phone2": "+91 9597552232"
+  },
+  "proposalValidDays": 7,
+  "sqftPerKw": 80,
+  "defaultInterestRate": 10,
+  "defaultTenureYears": 5,
+  "roiYears": 25,
+  "annualSavingsGrowthPercent": 3,
+  "unitsPerKwYear": 1440,
+  "tnebUnder500": {
+    "freeUpTo": 200,
+    "rate201to400": 4.95,
+    "rate401to500": 6.65
+  },
+  "tnebOver500": {
+    "freeUpTo": 100,
+    "rate101to400": 4.95,
+    "rate401to500": 6.65,
+    "rate501to600": 8.8,
+    "rate601to800": 9.95,
+    "rate801to1000": 11.05,
+    "rate1001plus": 12.15
+  },
+  "subsidy": {
+    "tier1MaxKw": 1.9,
+    "tier1Amount": 30000,
+    "tier2MaxKw": 2.9,
+    "tier2Amount": 60000,
+    "tier3Amount": 78000
+  },
+  "costPerKw": 66000,
+  "monthlyUnitsPerKw": 120,
+  "updatedAt": "2026-06-23T13:38:01.423Z"
+}

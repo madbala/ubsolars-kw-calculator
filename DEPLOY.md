@@ -101,7 +101,24 @@ gh repo create solar-kw-calculator --public --source=. --push
 2. **Add New Project** → import `solar-kw-calculator`
 3. Framework: Next.js (auto-detected) → **Deploy**
 
-Every push to `main` auto-deploys. No env vars needed.
+### Shared admin settings
+
+Dashboard values (tariff, pricing, company info) are stored in `data/app-settings.json` locally, or in **Vercel Blob** in production.
+
+**Local / VPS:** Unlock admin → edit → **Save settings** writes `data/app-settings.json`. New page loads fetch once from `/api/settings`.
+
+**Vercel (recommended):** Use Blob so admin saves persist across serverless deploys.
+
+1. Vercel project → **Storage** → **Create Database** → **Blob**
+2. Connect the store to this project (Vercel sets `BLOB_READ_WRITE_TOKEN` automatically)
+3. Redeploy, unlock admin, save settings once — settings are stored as `ubsolars-app-settings.json` in Blob
+4. Visitors load settings once per visit from `/api/settings` (no polling)
+
+**Free Hobby plan impact:** Blob is included on Hobby. This app uses ~1 KB storage and one read per page load plus rare admin writes — well within the free limits (1 GB storage, 10K reads / 2K writes per rolling 30 days). No extra hosting charge; performance impact is negligible (~tens of ms per visit). Mobile clients are unchanged (same HTTPS API).
+
+Without Blob on Vercel, file writes do not persist; commit `data/app-settings.json` or use code defaults until Blob is wired.
+
+Every push to `main` auto-deploys.
 
 ### Option B — GitHub Actions (this repo)
 

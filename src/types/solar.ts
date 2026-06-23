@@ -20,10 +20,16 @@ export type ProposalData = {
   subsidy: number;
   netInvestment: number;
   emi: number;
+  interestRate: number;
+  tenureYears: number;
   paybackYears: number;
   totalSavings25Years: number;
   monthlySavings: number;
+  bimonthlySavings: number;
+  monthlyBillAvg: number;
+  netMonthlyCashflow: number;
   postSolarBill: number;
+  solarGeneration: number;
   roofAreaSqFt?: number;
   systemMin?: number;
   systemMax?: number;
