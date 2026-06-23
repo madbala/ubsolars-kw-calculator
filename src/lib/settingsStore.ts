@@ -30,7 +30,7 @@ async function readFromBlob(): Promise<StoredSettings | null> {
   if (!useBlob()) return null;
   try {
     const result = await get(BLOB_PATH, {
-      access: "public",
+      access: "private",
       token: process.env.BLOB_READ_WRITE_TOKEN,
     });
     if (!result || result.statusCode !== 200 || !result.stream) return null;
@@ -48,7 +48,7 @@ async function writeToFile(stored: StoredSettings): Promise<void> {
 
 async function writeToBlob(stored: StoredSettings): Promise<void> {
   await put(BLOB_PATH, JSON.stringify(stored, null, 2), {
-    access: "public",
+    access: "private",
     addRandomSuffix: false,
     allowOverwrite: true,
     token: process.env.BLOB_READ_WRITE_TOKEN,

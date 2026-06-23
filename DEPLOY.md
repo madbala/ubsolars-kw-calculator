@@ -109,7 +109,7 @@ Dashboard values (tariff, pricing, company info) are stored in `data/app-setting
 
 **Vercel (recommended):** Use Blob so admin saves persist across serverless deploys.
 
-1. Vercel project → **Storage** → **Create Database** → **Blob**
+1. Vercel project → **Storage** → **Create Database** → **Blob** (private or public store both work; this app uses **private** access via server API only)
 2. Connect the store to this project (Vercel sets `BLOB_READ_WRITE_TOKEN` automatically)
 3. Redeploy, unlock admin, save settings once — settings are stored as `ubsolars-app-settings.json` in Blob
 4. Visitors load settings once per visit from `/api/settings` (no polling)
