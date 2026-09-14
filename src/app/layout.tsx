@@ -24,6 +24,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${jakarta.variable} h-full antialiased`}>
+      <head><meta name="google-site-verification" content="rs_qOw7ZAMlLNph98jGIeoiImGNIP9sgGlYKZl_PRkA" /></head>
       <body className="min-h-full min-h-[100dvh] font-sans">{children}</body>
     </html>
   );
