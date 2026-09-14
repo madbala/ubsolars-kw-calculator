@@ -120,6 +120,22 @@ Without Blob on Vercel, file writes do not persist; commit `data/app-settings.js
 
 Every push to `main` auto-deploys.
 
+### SEO / Google indexing
+
+After deploy, set the public site URL (optional but recommended for correct sitemap/canonicals):
+
+| Env var | Example |
+|---------|---------|
+| `NEXT_PUBLIC_SITE_URL` | `https://ubsolars-kw-calculator.vercel.app` (or your custom domain) |
+
+Then in [Google Search Console](https://search.google.com/search-console):
+
+1. Confirm property ownership (verification meta is already in the app)
+2. Submit sitemap: `https://YOUR-DOMAIN/sitemap.xml`
+3. Request indexing for the homepage
+
+Public SEO routes: `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest`, Open Graph image at `/opengraph-image`.
+
 ### Option B — GitHub Actions (this repo)
 
 1. Vercel → Project → Settings → General → copy **Project ID**
